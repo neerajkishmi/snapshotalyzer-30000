@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import click
 
 session = boto3.Session(profile_name='shotty')
@@ -118,9 +119,9 @@ def list_instances(project):
             i.id,
             i.instance_type,
             i.placement['AvailabilityZone'],
-            i.security_groups[0]['GroupName'],
-            i.security_groups[0]['GroupId'],
-            i.public_ip_address,
+            #i.security_groups[0]['GroupName'],
+            #i.security_groups[0]['GroupId'],
+            #i.public_ip_address,
             i.state['Name'],
             i.public_dns_name,
             tags.get('Project','<no project>')
@@ -135,7 +136,11 @@ def stop_instances(project):
 
     for i in instances:
         print("Stopping {0}...".format(i.id))
-        i.stop()
+        try:
+            i.stop()
+        except botocore.exceptions.ClientError as e:
+            print(" Could not stop {0}. ".format(i.id) + str(e))
+            continue
 
     return
 
@@ -147,7 +152,11 @@ def start_instances(project):
 
     for i in instances:
         print("Starting {0}...".format(i.id))
-        i.start()
+        try:
+            i.start()
+        except botocore.exceptions.ClientError as e:
+            print(" Could not start {0}. ".format(i.id) + str(e))
+            continue
 
     return
 
